@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://example.com/favicon.png">
+    <title>MaliPesa</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+      <link rel="stylesheet" href="style.css">
+<style>
+/* Balance Box */
+.balance-box {
+    background: #F2F2F2;
+    border: 2px solid #FFD700;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    color: #666666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.balance-box strong {
+    color: #006400;
+    font-size: 20px;
+} 
+
+/* Notification Styling */
+.investment-notification {
+    background: black;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    /*box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);*/
+    font-weight: bold;
+    animation: fadeInOut 5s ease-in-out;
+}
+
+/* Rangi za Sehemu Tofauti */
+.investor-name {
+    color: white;  /* Jina ni nyeupe */
+}
+
+.vip-level {
+    color: red;  /* VIP Level ni nyekundu */
+}
+
+.amount {
+    color: yellow;  /* Kiasi cha pesa ni njano */
+}
+
+/* Animation ya Kuingia na Kutoka */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+</style>    
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let bgMusic = document.getElementById("bg-music");
+
+    function playMusic() {
+        bgMusic.play().catch(error => console.log("Autoplay imezuiwa, mtumiaji anapaswa kubonyeza sehemu yoyote", error));
+    }
+
+    // Cheza muziki baada ya mtumiaji kubonyeza sehemu yoyote ya ukurasa
+    document.body.addEventListener("click", playMusic, { once: true });
+});
+</script>     
+</head>
+
+<body>
+<div class="header">
+    <!-- Notice -->
+    <div class="icon" onclick="toggleChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot" class="bot-icon">
+    <span>Helper bot</span>
+</div>
+    <!-- Recharge -->
+    <div class="icon" onclick="openPopup('recharge')">
+        <i class="fas fa-plus-circle"></i> <!-- Icon mpya ya recharge -->
+        <span>Recharge</span>
+    </div>
+    
+    <!-- Withdrawal -->
+    <div class="icon" onclick="openPopup('withdrawal')">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Withdraw</span>
+    </div>
+     <!-- Sehemu ya Balance
+    <div class="icon">
+        <i class="fas fa-money-bill-wave"></i> <!-- Icon mpya ya balance 
+        <span id="balance-amount">TSH 1,000</span>
+    </div>--->
+    <div class="balance-box">
+        <span>Salio:</span>  
+        <strong id="balance-amount">Tsh 1,000</strong>
+    </div>
+</div>
+
+<!-- POPUP MODAL WINDOW -->
+<div id="popup-dashboard" class="popup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closePopup()">&times;</span>
+        <div id="popup-body">
+            <h2>Dashboard</h2>
+            <h3 style="color:green">🎉Hongera umepata bonus Tsh 1,000.</3>
+   <p style="color:black">Share na Rafiki au Ongeza salio kupata bonus zaidi 🎁</p>
+        </div>
+    </div>
+</div>
+<audio controls id="bg-music" loop style="display:none;">
+  <source src="bg-music.mp3" type="audio/mp3">
+</audio>
+<!-- Banner yenye Graph ya Masoko ya Uwekezaji -->
+<div class="banner">
+  <h2>Investment Market Trends</h2>
+    <canvas id="investmentChart"></canvas>
+</div>
+<!-- Sehemu ya Jedwali la Bei na Mapato -->
+<div class="investment-table">
+    <h2 style="color:white;" id="investment-container" >Investment Levels & Returns</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>VIP Level</th>
+                <th>Investment (Tsh)</th>
+                <th>Daily Earnings (Tsh)</th>
+                <th>Monthly Earnings (Tsh)</th>
+                <th>Yearly Earnings (Tsh)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>VIP 1</td>
+                <td>2,500</td>
+                <td>250</td>
+                <td>7,500</td>
+                <td>90,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 1', 2500, 250)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 2</td>
+                <td>5,000</td>
+                <td>500</td>
+                <td>15,000</td>
+                <td>180,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 2', 5000, 500)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 3</td>
+                <td>10,000</td>
+                <td>1,000</td>
+                <td>30,000</td>
+                <td>360,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 3', 10000, 1000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 4</td>
+                <td>20,000</td>
+                <td>2,000</td>
+                <td>60,000</td>
+                <td>720,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 4', 20000, 2000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 5</td>
+                <td>40,000</td>
+                <td>4,000</td>
+                <td>120,000</td>
+                <td>1,440,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 5', 40000, 4000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 6</td>
+                <td>80,000</td>
+                <td>8,000</td>
+                <td>240,000</td>
+                <td>2,880,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 6', 80000, 8000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 7</td>
+                <td>160,000</td>
+                <td>16,000</td>
+                <td>480,000</td>
+                <td>5,760,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 7', 160000, 16000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 8</td>
+                <td>320,000</td>
+                <td>32,000</td>
+                <td>960,000</td>
+                <td>11,520,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 8', 320000, 32000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 9</td>
+                <td>640,000</td>
+                <td>64,000</td>
+                <td>1,920,000</td>
+                <td>23,040,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 9', 640000, 64000)">Invest Now</button></td>
+            </tr>
+            <tr>
+                <td>VIP 10</td>
+                <td>1,280,000</td>
+                <td>128,000</td>
+                <td>3,840,000</td>
+                <td>46,080,000</td>
+                <td><button class="invest-btn" onclick="openInvestmentPopup('VIP 10', 1280000, 128000)">Invest Now</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<!-- Popup ya Uwekezaji -->
+<div id="investment-popup" class="popupv" style="display:none;">
+    <div class="popup-contentv">
+        <span class="close-btnv" onclick="closeInvestmentPopup()">&times;</span>
+        <h2>Confirm Investment</h2>
+        <p><strong>VIP Level:</strong> <span id="vip-level"></span></p>
+        <p><strong>Investment Amount:</strong> <span id="investment-amount"></span> Tsh</p>
+        <p><strong>Daily Earnings:</strong> <span id="daily-earnings"></span> Tsh</p>
+        <button onclick="confirmInvestment()">Confirm Investment</button>
+    </div>
+</div>
+
+<!----filterContent----->
+<div id=" " class="content-section">  
+    <button class="close-btn" onclick="closeDashboard()">×</button>
+    <h2>Home Dashboard</h2>  
+    <p>Karibu kwenye mfumo wa uwekezaji.</p>  
+</div>
+
+<div id="investments" class="content-section">  
+    <button class="close-btn" onclick="closeDashboard()">×</button>
+    <h2>Records</h2>  
+    <p>Hapa ni sehemu ya records.</p>  
+</div>
+
+<!-- Team Dashboard --> 
+<div id="team" class="content-section">  
+    <button class="close-btn" onclick="closeDashboard()">×</button>
+    <h2>Invite & Earn Bonus</h2>
+
+    <!-- Referral Box -->
+    <div class="referral-box">
+        <input type="text" id="referral-link" value="https://yourwebsite.com/ref?code=ABC123" readonly>
+        <button onclick="copyReferral()">Copy Link</button>
+    </div>
+
+    <!-- Progress Bar ya Referrals -->
+    <div class="progress-section">
+        <h3>Referral Progress</h3>
+        <div class="progress-container">
+            <div class="progress-bar" id="referral-progress"></div>
+        </div>
+        <p id="referral-text">0/10 referrals completed</p>
+    </div>
+
+    <!-- Idadi ya Team Members -->
+    <div class="team-section">
+        <h3>Your Team Members</h3>
+        <ul id="team-list">
+            <li>No referrals yet.</li>
+        </ul>
+    </div>
+
+    <!-- Ujumbe wa Bonus -->
+    <p id="referral-bonus-message" class="bonus-message">
+        🎉 Congratulations! You've earned a bonus! Make a deposit to claim it.
+    </p> 
+</div>
+
+ <!-- Share Dashboard --> 
+<div id="notifications" class="content-section">  
+    <button class="close-btn" onclick="closeDashboard()">×</button>
+    <h2>Share & Earn Bonus 🎁</h2>
+    
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p id="progress-text">0/10 shares completed</p>
+<p>Share hadi kijani ijae progress bar</p>
+    <!-- Kitufe cha Kushiriki WhatsApp -->
+    <button class="whatsapp-share" onclick="shareOnWhatsApp()">
+        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+    </button>
+
+    <!-- Ujumbe wa Bonus -->
+    <p id="bonus-message" style="display: none; color: #00ff00; font-weight: bold;">
+        🎉 Congratulations! Share complete. Make a deposit to claim your bonus!
+    </p>
+</div>
+
+<div id="profile" class="content-section">  
+    <button class="close-btn" onclick="closeDashboard()">×</button>
+    <h2>Profile</h2>  
+    <p>your profile.</p>  
+</div>
+<!-----footer section----->
+<div class="footer">
+    <div class="nav-item" onclick="filterContent('home')">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="filterContent('investments')">
+        <i class="fas fa-history"></i>
+        <span>records</span>
+    </div>
+    <div class="nav-item" onclick="filterContent('team')">
+        <i class="fas fa-users"></i>
+        <span>Team</span>
+    </div>
+    <div class="nav-item" onclick="filterContent('notifications')">
+        <i class="fas fa-share-alt"></i>
+        <span>Bonus 🎁 Share</span>
+    </div>
+    <div class="nav-item" onclick="filterContent('profile')">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+    </div>
+</div>
+        
+<!-- Chatbot Button kwenye Header -
+<header>
+    <h1>Dashboard</h1>
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot" id="chatbot-icon" onclick="toggleChat()">
+</header>
+
+<!-- Chatbot Window -->
+<div id="chatbot-container">
+    <div id="chatbot-header">
+        <span>MaliPesa Bot</span>
+        <button onclick="toggleChat()">✖</button>
+    </div>
+    <div id="chatbot-body">
+        <div id="chatbot-messages">
+            <div class="bot-message">👋 Karibu! Mimi ni MaliPesa Bot. Naweza kusaidia kuhusu uwekezaji.</div>
+        </div>
+        <input type="text" id="chatbot-input" placeholder="Uliza swali..." onkeypress="handleUserInput(event)">
+    </div>
+</div>
+
+
+
+<script>
+//sahihisha balance recharge na withdrawal
+let balance = 1000; // Salio la mwanzo
+
+// Fungua popup na onyesha maudhui sahihi
+function openPopup(section) {
+    let popup = document.getElementById("popup-dashboard");
+    let popupBody = document.getElementById("popup-body");
+
+    if (!popup || !popupBody) {
+        console.error("Popup haipo kwenye HTML.");
+        return;
+    }
+
+    let content = "";
+    
+    // Recharge Section
+    if (section === "recharge") {
+        content = `
+            <h2>Recharge Dashboard</h2>
+            <p>Chagua mtandao wa malipo:</p>
+            <select id="payment-method" onchange="showPaymentDetails()">
+                <option value="">-- Chagua Mtandao --</option>
+                
+                <option value="tigopesa">Tigo Pesa</option>
+                <option value="Halopesa">Halopesa</option>
+                <option value="bank">Bank Transfer</option>
+            </select>
+            <div id="payment-details" style="display:none; margin-top:10px;"></div>
+        `;
+    } 
+    
+    // Withdrawal Section
+    else if (section === "withdrawal") {
+        content = `
+            <h2>Withdrawal Dashboard</h2>
+            <p>Chagua kiasi unachotaka kutoa (10,000 TSH au zaidi).</p>
+            <input type="number" id="withdraw-amount" placeholder="Ingiza kiasi">
+            <br><br>
+            <button onclick="processWithdrawal()">Thibitisha Utoaji</button>
+        `;
+    }
+
+    popupBody.innerHTML = content;
+    popup.style.display = "flex";
+}
+
+// Onyesha maelezo ya malipo baada ya kuchagua mtandao
+function showPaymentDetails() {
+    let method = document.getElementById("payment-method").value;
+    let detailsDiv = document.getElementById("payment-details");
+
+    let paymentInfo = {
+        tigopesa: { number: "255678925070", name: "EVELINE MICHAEL- Tigo" },
+        Halopesa: { number: "255623202623", name: "EVELINE MICHAEL- Halotel" },
+        bank: { number: "1234567890", name: "XYZ Bank - ACC: 987654321" }
+    };
+
+    if (method in paymentInfo) {
+        detailsDiv.innerHTML = `
+            <p><strong>Namba ya Malipo:</strong> ${paymentInfo[method].number}</p>
+            <p><strong>Jina la Usajili:</strong> ${paymentInfo[method].name}</p>
+            <p>Tafadhali tuma kiasi unachotaka kuweka kwenye namba iliyo hapo juu, kisha subiri dakika chache ili salio lako liongezwe.</p>
+            <input type="text" id="amount" placeholder="Weka utambulisho wa muamala Transaction ID" required>
+            <br><br>
+            <button onclick="processRechargefake()">Thibitisha Malipo</button>
+        `;
+        detailsDiv.style.display = "block";
+    } else {
+        detailsDiv.style.display = "none";
+    }
+}
+
+// Process Recharge
+function processRecharge() {
+    let amount = parseInt(document.getElementById("amount").value, 10);
+    if (!isNaN(amount) && amount > 0) {
+        updateBalance(amount, "add");
+        alert("Malipo yanachakatwa, salio litaongezwa baada ya dakika chache.");
+        closePopup();
+    } else {
+        alert("Tafadhali ingiza kiasi sahihi.");
+    }
+}
+// Process Recharge fake
+function processRechargefake() {
+        alert("Malipo yanachakatwa, salio litaongezwa baada ya dakika chache.");
+        closePopup();
+ }
+
+// Process Withdrawal
+function processWithdrawal() {
+    let amount = parseInt(document.getElementById("withdraw-amount").value, 10);
+    if (!isNaN(amount) && amount >= 10000) {
+        updateBalance(amount, "subtract");
+        alert("Utoaji wa pesa umekubaliwa, tafadhali subiri ndani ya saa chache.");
+        closePopup();
+    } else if (amount < 10000) {
+        alert("Kiasi cha kutoa lazima kiwe 10,000 TSH au zaidi.");
+    } else {
+        alert("Tafadhali ingiza kiasi sahihi.");
+    }
+}
+
+// Sasisha balance kwenye header
+function updateBalance(amount, operation) {
+    amount = parseInt(amount, 10); // Hakikisha ni number
+
+    if (isNaN(amount)) {
+        console.error("Thamani si namba sahihi");
+        return;
+    }
+
+    if (operation === "add") {
+        balance += amount;
+    } else if (operation === "subtract") {
+        if (balance >= amount) {
+            balance -= amount;
+        } else {
+            alert("Salio halitoshi!");
+            return;
+        }
+    }
+
+    // Onyesha balance mpya kwa format nzuri
+    document.getElementById("balance-amount").innerText = "TSH " + balance.toLocaleString();
+}
+
+// Kufunga popup
+function closePopup() {
+    document.getElementById("popup-dashboard").style.display = "none";
+}
+</script>
+
+<!-- graph yenye neone CDN -->
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let ctx = document.getElementById("investmentChart").getContext("2d");
+
+    let investmentData = {
+        labels: ["10s ago", "8s ago", "6s ago", "4s ago", "2s ago", "Now"],
+        datasets: [{
+            label: "Investment Value (TSH)",
+            borderColor: "#1E90FF",  /* Mstari wa neon red */
+            backgroundColor: "#F5F5DC", /* Background ya neon green */
+            pointBackgroundColor: "#DAA520", /* Dots za data ziwe neon green */
+            pointBorderColor: "#DAA520",
+            borderWidth: 2,
+            pointRadius: 4,
+            data: [100, 102, 98, 105, 103, 106] // Data ya mwanzo
+        }]
+    };
+
+    let investmentChart = new Chart(ctx, {
+        type: "line",
+        data: investmentData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    display: true,
+                    grid: { color: "rgba(255, 255, 255, 0.1)" }, /* Mistari ya grid nyeupe hafifu */
+                    ticks: { color: "#F5F5DC" } /* Rangi ya maandishi kwenye x-axis */
+                },
+                y: {
+                    display: true,
+                    grid: { color: "rgba(255, 255, 255, 0.1)" },
+                    ticks: { color: "#F5F5DC" }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#ffffff" /* Rangi ya maandishi ya legend */
+                    }
+                }
+            }
+        }
+    });
+
+    function updateGraph() {
+        let newValue = investmentData.datasets[0].data[investmentData.datasets[0].data.length - 1] + (Math.random() * 4 - 2);
+        investmentData.datasets[0].data.shift();
+        investmentData.datasets[0].data.push(Math.round(newValue)); // Ongeza thamani mpya
+
+        investmentChart.update();
+    }
+
+    setInterval(updateGraph, 2000); // Sasisha kila sekunde 2
+});
+</script>
+
+
+
+<script>
+//fungua popup na kata hela kwenye balance
+
+//let balance = 1000;  Salio la mwanzo
+
+// Fungua Popup ya Uwekezaji
+function openInvestmentPopup(vip, amount, daily) {
+    document.getElementById("vip-level").innerText = vip;
+    document.getElementById("investment-amount").innerText = amount.toLocaleString();
+    document.getElementById("daily-earnings").innerText = daily.toLocaleString();
+    
+    document.getElementById("investment-popup").style.display = "flex";
+}
+
+// Funga Popup ya Uwekezaji
+function closeInvestmentPopup() {
+    document.getElementById("investment-popup").style.display = "none";
+}
+
+// Thibitisha Uwekezaji
+function confirmInvestment() {
+    let amount = parseInt(document.getElementById("investment-amount").innerText.replace(",", ""));
+    
+    if (balance >= amount) {
+        balance -= amount;
+        document.getElementById("balance-amount").innerText = "TSH " + balance.toLocaleString();
+        alert("Uwekezaji umefanikiwa! Pata mapato yako kila siku.");
+        closeInvestmentPopup();
+    } else {
+        alert("Salio halitoshi! Tafadhali recharge kwanza.");
+    }
+}
+</script>
+<script>
+function openInvestmentPopup(vip, amount, daily) {
+    let popup = document.getElementById("investment-popup");
+    
+    // Weka thamani za VIP kwenye popup
+    document.getElementById("vip-level").innerText = vip;
+    document.getElementById("investment-amount").innerText = amount.toLocaleString();
+    document.getElementById("daily-earnings").innerText = daily.toLocaleString();
+
+    // Fungua popup tu pale mtu anapobonyeza "Invest Now"
+    popup.style.display = "flex";
+}
+</script>
+
+<script>
+ //fungua na funga filters
+function filterContent(sectionId) {
+    // Pata sections zote
+    let sections = document.querySelectorAll('.content-section');
+
+    // Ficha sections zote kwanza
+    sections.forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Onyesha section iliyobonyezwa
+    document.getElementById(sectionId).classList.add('active');
+}
+
+// Kufunga dashboard
+function closeDashboard() {
+    let sections = document.querySelectorAll('.content-section');
+    sections.forEach(section => {
+        section.classList.remove('active');
+    });
+}
+</script>
+
+<script>
+//Refferal link na progress
+let referralCount = 0; // Idadi ya referrals zilizofanyika
+const totalReferralsRequired = 10; // Malengo ya referrals
+let teamList = document.getElementById("team-list");
+
+function copyReferral() {
+    let referralLink = document.getElementById("referral-link");
+    referralLink.select();
+    referralLink.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(referralLink.value);
+    alert("Referral link copied!");
+}
+
+// Function ya kuongeza referrals
+function addReferral(name) {
+    referralCount++;
+
+    // Ongeza jina la aliyejiunga kwenye list
+    let newMember = document.createElement("li");
+    newMember.innerText = name;
+    teamList.appendChild(newMember);
+
+    // Sasisha Progress Bar
+    updateReferralProgress();
+}
+
+function updateReferralProgress() {
+    let progressBar = document.getElementById("referral-progress");
+    let referralText = document.getElementById("referral-text");
+    let referralBonusMessage = document.getElementById("referral-bonus-message");
+
+    // Hesabu asilimia ya progress
+    let progressPercentage = (referralCount / totalReferralsRequired) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
+    referralText.innerText = `${referralCount}/${totalReferralsRequired} referrals completed`;
+
+    // Ikiwa progress imefika 100%, onyesha ujumbe wa bonus
+    if (referralCount >= totalReferralsRequired) {
+        referralBonusMessage.style.display = "block";
+    }
+}
+
+// **Hii function inaweza kuunganishwa na database ili referrals ziwe za kweli**
+function simulateReferral() {
+    let fakeNames = ["John Doe", "Jane Smith", "Alex Johnson", "Emily Brown", "David Lee"];
+    let randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+    addReferral(randomName);
+}
+
+// Test: Bonyeza F12 kwenye Console na andika `simulateReferral()` ili kuona referrals zikiongezeka.
+</script>
+
+<script>
+//share whatsapp na progress
+let shareCount = 0; // Idadi ya shares zilizofanyika
+const totalSharesRequired = 10; // Idadi inayohitajika ili kupata bonus
+
+function shareOnWhatsApp() {
+    let message = encodeURIComponent("Join this amazing investment platform and earn bonuses! 🌟\n\nSign up now: https://yourwebsite.com");
+    let whatsappURL = `https://wa.me/?text=${message}`;
+    
+    // Fungua WhatsApp kwa kushiriki
+    window.open(whatsappURL, "_blank");
+
+    // Ongeza idadi ya shares
+    shareCount++;
+    updateProgress();
+}
+
+function updateProgress() {
+    let progressBar = document.getElementById("progress-bar");
+    let progressText = document.getElementById("progress-text");
+    let bonusMessage = document.getElementById("bonus-message");
+
+    // Hesabu asilimia ya progress
+    let progressPercentage = (shareCount / totalSharesRequired) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
+    progressText.innerText = `${shareCount}/${totalSharesRequired} shares completed`;
+
+    // Ikiwa progress imefika 100%, onyesha ujumbe wa bonus
+    if (shareCount >= totalSharesRequired) {
+        bonusMessage.style.display = "block";
+    }
+}
+</script>
+
+<script>
+function showInvestmentNotification() {
+    let container = document.getElementById("investment-container"); // Pata container ya notifications
+
+    let notification = document.createElement("div");
+    notification.classList.add("investment-notification");
+
+    // Orodha ya Majina 100 ya Random Investors
+    let investors = [
+        "John D.", "Jane K.", "Alex M.", "Emily R.", "David T.", "Michael B.", "Sophia L.", "James W.", "Olivia H.", "Daniel C.",
+        "Emma P.", "Matthew S.", "Ava J.", "Henry N.", "Isabella F.", "Ethan M.", "Mia B.", "Liam T.", "Charlotte G.", "Noah R.",
+        "Amelia D.", "Benjamin A.", "Harper V.", "Elijah K.", "Evelyn Y.", "Lucas Z.", "Abigail C.", "Mason P.", "Ella Q.", "Logan U.",
+        "Sofia J.", "Alexander L.", "Madison B.", "Jacob W.", "Scarlett T.", "Michael N.", "Victoria H.", "Sebastian K.", "Aria G.",
+        "William C.", "Grace M.", "Jack F.", "Luna R.", "Aiden T.", "Chloe P.", "Samuel Y.", "Layla D.", "David Z.", "Zoe A.",
+        "Joseph Q.", "Riley W.", "Charles N.", "Lillian K.", "Luke V.", "Hannah M.", "Andrew J.", "Nora T.", "Gabriel B.", "Stella C.",
+        "Isaac L.", "Maya P.", "Anthony R.", "Penelope H.", "Dylan Y.", "Aubrey G.", "Nathan Z.", "Brooklyn W.", "Ryan Q.", "Paisley T.",
+        "Caleb N.", "Savannah M.", "Joshua K.", "Elena V.", "Adrian B.", "Peyton C.", "Hunter L.", "Mackenzie P.", "Eli R.", "Kennedy H.",
+        "Aaron Y.", "Samantha G.", "Christian Z.", "Allison W.", "Jonathan Q.", "Leah T.", "Cameron N.", "Audrey M.", "Thomas K.", 
+        "Skylar V.", "Jordan B.", "Ariana C.", "Brandon L.", "Lydia P.", "Angel R.", "Lucy H.", "Connor Y.", "Eva G.", "Jeremiah Z."
+    ];
+
+    // Viwango vya VIP na kiasi cha uwekezaji
+    let vipLevels = {
+        "VIP 1": 2500,
+        "VIP 2": 5000,
+        "VIP 3": 10000,
+        "VIP 4": 20000,
+        "VIP 5": 40000,
+        "VIP 6": 80000,
+        "VIP 7": 160000,
+        "VIP 8": 320000,
+        "VIP 9": 640000,
+        "VIP 10": 1280000,
+    };
+
+    let randomInvestor = investors[Math.floor(Math.random() * investors.length)];
+    let vipKeys = Object.keys(vipLevels);
+    let randomVIP = vipKeys[Math.floor(Math.random() * vipKeys.length)];
+    let amountInvested = vipLevels[randomVIP];
+
+    notification.innerHTML = `
+        💰 <span class="investor-name">${randomInvestor}</span> 
+        amewekeza 
+        <span class="vip-level">${randomVIP}</span> - 
+        <span class="amount">Tsh ${amountInvested.toLocaleString()}</span>
+    `;
+
+    // Ongeza notification ndani ya container
+    container.appendChild(notification);
+
+    // Ondoa notification baada ya sekunde 5
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Toa notification kila sekunde 15
+setInterval(showInvestmentNotification, 15000);
+</script>
+
+<script>
+const chatbotResponses = {
+    "habari": "👋 Habari! Mimi ni MaliPesa Bot. Naweza kukusaidia kuhusu uwekezaji.",
+    "kampuni": "📢 MaliPesa ni jukwaa la uwekezaji linalokupa fursa ya kukua kifedha kwa uwekezaji salama.",
+    "uwekezaji": "💰 Unahitaji kuweka angalau Tsh 2,500 ili kuanza. Unapanda ngazi za VIP hadi VIP 10 kwa faida kubwa.",
+    "vip": "⚡ Kuna VIP 1 hadi VIP 10. Kiwango cha chini cha uwekezaji ni Tsh 2,500 (VIP 1), na cha juu ni Tsh 5,000,000 (VIP 10).",
+    "msaada": "🤖 Unaweza kuniuliza maswali kama: 'kampuni', 'uwekezaji', 'vip', au 'msaada'."
+};
+
+function toggleChat() {
+    let chatContainer = document.getElementById("chatbot-container");
+    chatContainer.style.display = (chatContainer.style.display === "none" || chatContainer.style.display === "") ? "flex" : "none";
+}
+
+function handleUserInput(event) {
+    if (event.key === "Enter") {
+        let userInput = document.getElementById("chatbot-input").value.toLowerCase().trim();
+        document.getElementById("chatbot-input").value = "";
+
+        if (userInput === "") return;
+
+        addMessage(userInput, "user-message");
+
+        setTimeout(() => {
+            let response = chatbotResponses[userInput] || "❌ Samahani, sijaelewa. Jaribu kuuliza kitu kingine.";
+            addMessage(response, "bot-message");
+        }, 1000);
+    }
+}
+
+function addMessage(text, className) {
+    let messageDiv = document.createElement("div");
+    messageDiv.classList.add(className);
+    messageDiv.textContent = text;
+    document.getElementById("chatbot-messages").appendChild(messageDiv);
+
+    let chatMessages = document.getElementById("chatbot-messages");
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+</script>
+
+</body>
+</html>
